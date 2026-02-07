@@ -1,21 +1,21 @@
 #pragma once
 #include <Arduino.h>
-#include "CanSignal.h"
+#include "CANSignal.h"
 
 class VehicleSignals
 {
 public:
     // Example _signals
-    CanSignal rpm;
-    CanSignal map;
-    CanSignal tps;
-    CanSignal coolant;
-    CanSignal afr1;
-    CanSignal pw1;
-    CanSignal battery;
-    CanSignal fuelLevel;
-    CanSignal leftTurn;
-    CanSignal rightTurn;
+    CANSignal rpm;
+    CANSignal map;
+    CANSignal tps;
+    CANSignal coolant;
+    CANSignal afr1;
+    CANSignal pw1;
+    CANSignal battery;
+    CANSignal fuelLevel;
+    CANSignal leftTurn;
+    CANSignal rightTurn;
 
     VehicleSignals();
 

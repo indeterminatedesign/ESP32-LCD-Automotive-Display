@@ -1,17 +1,17 @@
 #pragma once
 #include <Arduino.h>
 
-enum class CanSignalDataType
+enum class CANSignalDataType
 {
     U16,
     S16,
     Float
 };
 
-class CanSignal
+class CANSignal
 {
 public:
-    CanSignalDataType type;
+    CANSignalDataType type;
     float value = 0.0f;
     uint32_t lastUpdate = 0;
 
@@ -20,7 +20,7 @@ public:
     uint8_t offset;
     float scale;
 
-    CanSignal(uint32_t id = 0, uint8_t off = 0, float scl = 1.0f, CanSignalDataType t = CanSignalDataType::U16)
+    CANSignal(uint32_t id = 0, uint8_t off = 0, float scl = 1.0f, CANSignalDataType t = CANSignalDataType::U16)
         : canId(id), offset(off), scale(scl), type(t) {}
 
     void decode(const uint8_t *data)
@@ -28,13 +28,13 @@ public:
         uint16_t raw = (data[offset] << 8) | data[offset + 1];
         switch (type)
         {
-        case CanSignalDataType::S16:
+        case CANSignalDataType::S16:
             value = ((int16_t)raw) * scale;
             break;
-        case CanSignalDataType::U16:
+        case CANSignalDataType::U16:
             value = raw * scale;
             break;
-        case CanSignalDataType::Float:
+        case CANSignalDataType::Float:
             value = *((float *)&raw) * scale;
             break;
         }

@@ -1,2 +1,2 @@
-#include "Signal.h"
+#include "CANSignal.h"
 // Nothing else needed; decoding logic is inline

@@ -1,7 +1,13 @@
 #include <Arduino.h>
 #include <esp_display_panel.hpp>
 #include <lvgl.h>
-#include "lvgl_v8_port.h" // Ensure this file is in your src folder
+#include "lvgl_v8_port.h"
+#include <driver/twai.h>
+#include "VehicleSignals.h"
+#include "MegasquirtDecoder.h"
+#include "CanSignal.h"
+#include "CANBus.h"
+
 
 using namespace esp_panel::board;
 
