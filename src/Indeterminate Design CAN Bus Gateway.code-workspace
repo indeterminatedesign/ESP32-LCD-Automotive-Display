@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "../../Indeterminate Design CAN Bus Gateway"
+		},
+		{
+			"name": "Megasquirt_CAN_Simulator",
+			"path": "../../Megasquirt_CAN_Simulator/Megasquirt_CAN_Simulator"
+		},
+		{
+			"name": "Waveshare LCD Autmotive Display",
+			"path": ".."
+		}
+	],
+	"settings": {}
+}
