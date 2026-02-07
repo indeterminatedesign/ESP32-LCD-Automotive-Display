@@ -13,6 +13,10 @@ CANBus canBus;
 VehicleSignals vehicleSignals;
 MegasquirtDecoder msDecoder(vehicleSignals);
 
+lv_obj_t *rpmLabel;
+lv_obj_t *mapLabel;
+lv_obj_t *fuelLabel;
+
 void setup()
 {
   Serial.begin(115200);
@@ -48,23 +52,21 @@ void setup()
   // 6. Create the UI (Thread-safe)
   lvgl_port_lock(-1);
 
-  // Create a dark background style
-  lv_obj_set_style_bg_color(lv_scr_act(), lv_color_make(20, 20, 20), 0);
+  lv_obj_set_style_bg_color(lv_scr_act(), lv_color_make(0, 0, 0), 0);
 
-  // Create "Hello World" Label
-  lv_obj_t *label = lv_label_create(lv_scr_act());
-  lv_label_set_text(label, "Hello Gemini!");
+  rpmLabel = lv_label_create(lv_scr_act());
+  lv_obj_set_style_text_font(rpmLabel, &lv_font_montserrat_30, 0);
+  lv_obj_set_style_text_color(rpmLabel, lv_palette_main(LV_PALETTE_CYAN), 0);
 
-  // Position and Font
-  lv_obj_set_style_text_font(label, &lv_font_montserrat_48, 0);
-  lv_obj_set_style_text_color(label, lv_palette_main(LV_PALETTE_CYAN), 0);
-  lv_obj_align(label, LV_ALIGN_CENTER, 0, -30);
+  mapLabel = lv_label_create(lv_scr_act());
+  lv_obj_align(mapLabel, LV_ALIGN_TOP_LEFT, 20, 80);
+  lv_obj_set_style_text_font(mapLabel, &lv_font_montserrat_30, 0);
+  lv_obj_set_style_text_color(mapLabel, lv_palette_main(LV_PALETTE_CYAN), 0);
 
-  // Sub-text for Hardware Confirmation
-  lv_obj_t *sub_label = lv_label_create(lv_scr_act());
-  lv_label_set_text(sub_label, "Waveshare 7\" S3 - LVGL 8.4");
-  lv_obj_set_style_text_color(sub_label, lv_palette_main(LV_PALETTE_GREY), 0);
-  lv_obj_align(sub_label, LV_ALIGN_CENTER, 0, 40);
+  fuelLabel = lv_label_create(lv_scr_act());
+  lv_obj_align(fuelLabel, LV_ALIGN_TOP_LEFT, 20, 140);
+  lv_obj_set_style_text_font(fuelLabel, &lv_font_montserrat_30, 0);
+  lv_obj_set_style_text_color(fuelLabel, lv_palette_main(LV_PALETTE_CYAN), 0);
 
   lvgl_port_unlock();
 
@@ -77,17 +79,34 @@ void loop()
   // Your loop is now free for your own logic!
   static uint32_t counter = 0;
   Serial.printf("System Uptime: %d seconds\n", counter++);
-    twai_message_t msg;
-    if(twai_receive(&msg, pdMS_TO_TICKS(10)) == ESP_OK)
-    {
-        // Route to correct decoder
-        if(msg.identifier >= 0x5E8 && msg.identifier <= 0x5EA)
-            msDecoder.processFrame(msg);
-    }
-        // Example: read signals
-    Serial.print("RPM: "); Serial.println(vehicleSignals.rpm.value);
-    Serial.print("MAP: "); Serial.println(vehicleSignals.map.value);
-    Serial.print("Fuel: "); Serial.println(vehicleSignals.fuelLevel.value);
-    Serial.println("---");
+  twai_message_t msg;
+  if (twai_receive(&msg, pdMS_TO_TICKS(10)) == ESP_OK)
+  {
+    // Route to correct decoder
+    if (msg.identifier >= 0x5E8 && msg.identifier <= 0x5EA)
+      msDecoder.processFrame(msg);
+  }
+  // Example: read signals
+  Serial.print("RPM: ");
+  Serial.println(vehicleSignals.rpm.value);
+  Serial.print("MAP: ");
+  Serial.println(vehicleSignals.map.value);
+  Serial.print("Fuel: ");
+  Serial.println(vehicleSignals.fuelLevel.value);
+  Serial.println("---");
+  char buffer[64];
+
+  lvgl_port_lock(-1);
+
+  snprintf(buffer, sizeof(buffer), "RPM: %.0f", vehicleSignals.rpm.value);
+  lv_label_set_text(rpmLabel, buffer);
+
+  snprintf(buffer, sizeof(buffer), "MAP: %.1f", vehicleSignals.map.value);
+  lv_label_set_text(mapLabel, buffer);
+
+  snprintf(buffer, sizeof(buffer), "Fuel: %.1f", vehicleSignals.fuelLevel.value);
+  lv_label_set_text(fuelLabel, buffer);
+
+  lvgl_port_unlock();
   delay(100);
 }
