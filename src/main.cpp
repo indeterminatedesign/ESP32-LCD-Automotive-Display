@@ -8,8 +8,10 @@
 #include "CanSignal.h"
 #include "CANBus.h"
 
-
 using namespace esp_panel::board;
+CANBus canBus;
+VehicleSignals vehicleSignals;
+MegasquirtDecoder msDecoder(vehicleSignals);
 
 void setup()
 {
@@ -32,6 +34,9 @@ void setup()
 
   // 3. Start the hardware
   assert(board->begin());
+
+  // Start CanBus
+  canBus.begin();
 
   // 4. Turn on Backlight (Brightness 0-100)
   board->getBacklight()->setBrightness(100);
@@ -72,5 +77,17 @@ void loop()
   // Your loop is now free for your own logic!
   static uint32_t counter = 0;
   Serial.printf("System Uptime: %d seconds\n", counter++);
-  delay(1000);
+    twai_message_t msg;
+    if(twai_receive(&msg, pdMS_TO_TICKS(10)) == ESP_OK)
+    {
+        // Route to correct decoder
+        if(msg.identifier >= 0x5E8 && msg.identifier <= 0x5EA)
+            msDecoder.processFrame(msg);
+    }
+        // Example: read signals
+    Serial.print("RPM: "); Serial.println(vehicleSignals.rpm.value);
+    Serial.print("MAP: "); Serial.println(vehicleSignals.map.value);
+    Serial.print("Fuel: "); Serial.println(vehicleSignals.fuelLevel.value);
+    Serial.println("---");
+  delay(100);
 }
