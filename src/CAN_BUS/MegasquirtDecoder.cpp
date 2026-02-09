@@ -1,7 +1,7 @@
 #include "MegasquirtDecoder.h"
 
-MegasquirtDecoder::MegasquirtDecoder(VehicleSignals& _signalsRef)
-    : _signals(_signalsRef)
+MegasquirtDecoder::MegasquirtDecoder(VehicleData& _signalsRef)
+    : _vehicleSignalData(_signalsRef)
 {}
 
 uint16_t MegasquirtDecoder::readU16(const uint8_t* d, uint8_t offset)
@@ -29,26 +29,26 @@ void MegasquirtDecoder::processFrame(const twai_message_t& msg)
 
 void MegasquirtDecoder::decodeGroup0(const uint8_t* d)
 {
-    _signals.map.value = readS16(d,0) / 10.0f;
-    _signals.rpm.value = readU16(d,2);
-    _signals.coolant.value = readS16(d,4) / 10.0f;
-    _signals.tps.value = readS16(d,6) / 10.0f;
-    _signals.map.lastUpdate = millis();
-    _signals.rpm.lastUpdate = millis();
-    _signals.coolant.lastUpdate = millis();
-    _signals.tps.lastUpdate = millis();
+    _vehicleSignalData.map.value = readS16(d,0) / 10.0f;
+    _vehicleSignalData.rpm.value = readU16(d,2);
+    _vehicleSignalData.coolant.value = readS16(d,4) / 10.0f;
+    _vehicleSignalData.tps.value = readS16(d,6) / 10.0f;
+    _vehicleSignalData.map.lastUpdate = millis();
+    _vehicleSignalData.rpm.lastUpdate = millis();
+    _vehicleSignalData.coolant.lastUpdate = millis();
+    _vehicleSignalData.tps.lastUpdate = millis();
 }
 
 void MegasquirtDecoder::decodeGroup1(const uint8_t* d)
 {
-    _signals.pw1.value = readU16(d,0) / 1000.0f;
-    _signals.afr1.value = readU16(d,4) / 10.0f;
-    _signals.pw1.lastUpdate = millis();
-    _signals.afr1.lastUpdate = millis();
+    _vehicleSignalData.pw1.value = readU16(d,0) / 1000.0f;
+    _vehicleSignalData.afr1.value = readU16(d,4) / 10.0f;
+    _vehicleSignalData.pw1.lastUpdate = millis();
+    _vehicleSignalData.afr1.lastUpdate = millis();
 }
 
 void MegasquirtDecoder::decodeGroup2(const uint8_t* d)
 {
-    _signals.battery.value = readU16(d,2) / 10.0f;
-    _signals.battery.lastUpdate = millis();
+    _vehicleSignalData.battery.value = readU16(d,2) / 10.0f;
+    _vehicleSignalData.battery.lastUpdate = millis();
 }

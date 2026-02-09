@@ -1,16 +1,16 @@
 #pragma once
-#include "VehicleSignals.h"
+#include "VehicleData.h"
 #include "driver/twai.h"
 
 class MegasquirtDecoder
 {
 public:
-    MegasquirtDecoder(VehicleSignals& signalsRef);
+    MegasquirtDecoder(VehicleData& signalsRef);
 
     void processFrame(const twai_message_t& msg);
 
 private:
-    VehicleSignals& _signals;
+    VehicleData& _vehicleSignalData;
 
     void decodeGroup0(const uint8_t* data);
     void decodeGroup1(const uint8_t* data);
