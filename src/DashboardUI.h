@@ -5,21 +5,39 @@
 #include "lvgl_v8_port.h"
 #include "CAN_Bus/VehicleData.h"
 
+using namespace esp_panel::drivers;
+using namespace esp_panel::board;
+
 class DashboardUI
 {
 public:
     void begin(esp_panel::board::Board *board, VehicleData *vehicleSignals);
     void render();
+
 private:
     esp_panel::board::Board *_board;
+    //Text labels
     lv_obj_t *_rpmLabel;
+    lv_obj_t *_batteryLabel;
+    lv_obj_t *_tpsLabel;
+    lv_obj_t *_coolantLabel;
+    lv_obj_t *_pwLabel;
+    lv_obj_t *_afrLabel;
     lv_obj_t *_mapLabel;
     lv_obj_t *_fuelLabel;
-    lv_meter_indicator_t *indic_needle;
-    lv_obj_t *meter;
+
+    //Value labels
+    lv_obj_t *_batteryValueLabel;
+    lv_obj_t *_tpsValueLabel;
+    lv_obj_t *_coolantValueLabel;
+    lv_obj_t *_pwValueLabel;
+    lv_obj_t *_afrValueLabel;
+    lv_obj_t *_rpmValueLabel;
+    lv_obj_t *_mapValueLabel;
+    lv_obj_t *barRPM;
+    lv_obj_t *fuelBar;
     VehicleData *_currentSignals = nullptr;
     VehicleData previousVehicleData;
     static void scale_label_format_cb(lv_event_t *e);
     static void ui_timer_cb(lv_timer_t *timer);
-
 };

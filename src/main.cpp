@@ -25,7 +25,7 @@ lv_obj_t *mapLabel;
 lv_obj_t *fuelLabel;
 
 // ----------------- CAN Task -----------------
-void canTask(void *param)
+void canRecieveTask(void *param)
 {
   while (true)
   {
@@ -46,14 +46,14 @@ void canTask(void *param)
 
 void setup()
 {
-  btStop();
-    //Disable bluetooth and Wifi
+  // Disable bluetooth and Wifi
   esp_wifi_disconnect();
   esp_wifi_stop();
   esp_wifi_deinit();
   btStop();
 
   Serial.begin(115200);
+
   Serial.println("Starting Waveshare 7-inch Hello World...");
 
   // Initialize the Board (LCD + IO Expander)
@@ -73,13 +73,13 @@ void setup()
 
   // Create CAN task pinned to core 0
   xTaskCreatePinnedToCore(
-      canTask,          // Task function
-      "CAN Task",       // Name
-      4096,             // Stack size (bytes)
-      NULL,             // Parameter
-      1,                // Priority
-      NULL,             // Task handle
-      0                 // Core ID
+      canRecieveTask,    // Task function
+      "CAN Task", // Name
+      4096,       // Stack size (bytes)
+      NULL,       // Parameter
+      1,          // Priority
+      NULL,       // Task handle
+      0           // Core ID
   );
 }
 
