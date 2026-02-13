@@ -54,32 +54,48 @@ void setup()
 
   Serial.begin(115200);
 
-  Serial.println("Starting Waveshare 7-inch Hello World...");
-
   // Initialize the Board (LCD + IO Expander)
   board = new Board();
   board->init();
 
+  // 2. CONFIGURE BEFORE INIT
+  auto lcd = board->getLCD();
+#if LVGL_PORT_AVOID_TEARING_MODE
+  lcd->configFrameBufferNumber(LVGL_PORT_DISP_BUFFER_NUM);
+#endif
+
+#if ESP_PANEL_DRIVERS_BUS_ENABLE_RGB && CONFIG_IDF_TARGET_ESP32S3
+    auto lcd_bus = lcd->getBus();
+    /**
+     * As the anti-tearing feature typically consumes more PSRAM bandwidth, for the ESP32-S3, we need to utilize the
+     * "bounce buffer" functionality to enhance the RGB data bandwidth.
+     * This feature will consume `bounce_buffer_size * bytes_per_pixel * 2` of SRAM memory.
+     */
+    if (lcd_bus->getBasicAttributes().type == ESP_PANEL_BUS_TYPE_RGB) {
+        static_cast<BusRGB *>(lcd_bus)->configRGB_BounceBufferSize(lcd->getFrameWidth() * 10);
+    }
+#endif
+
   // Start the hardware
   assert(board->begin());
 
-  // Start CanBus
-  canBus.begin();
-
   // Render the UI
   dashboardUI.begin(board, &vehicleSignalsReadBuffer);
+
+  // Start CanBus
+  canBus.begin();
 
   Serial.println("UI Rendered Successfully");
 
   // Create CAN task pinned to core 0
   xTaskCreatePinnedToCore(
-      canRecieveTask,    // Task function
-      "CAN Task", // Name
-      4096,       // Stack size (bytes)
-      NULL,       // Parameter
-      1,          // Priority
-      NULL,       // Task handle
-      0           // Core ID
+      canRecieveTask, // Task function
+      "CAN Task",     // Name
+      4096,           // Stack size (bytes)
+      NULL,           // Parameter
+      1,              // Priority
+      NULL,           // Task handle
+      0               // Core ID
   );
 }
 

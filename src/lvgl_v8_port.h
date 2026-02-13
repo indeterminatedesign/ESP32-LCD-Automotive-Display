@@ -38,7 +38,7 @@
  */
 #define LVGL_PORT_BUFFER_MALLOC_CAPS            (MALLOC_CAP_DMA | MALLOC_CAP_8BIT)       // Allocate LVGL buffer in SRAM
  //#define LVGL_PORT_BUFFER_MALLOC_CAPS            (MALLOC_CAP_SPIRAM)      // Allocate LVGL buffer in PSRAM
-#define LVGL_PORT_BUFFER_SIZE_HEIGHT            (40)
+#define LVGL_PORT_BUFFER_SIZE_HEIGHT            (50)
 #define LVGL_PORT_BUFFER_NUM                    (2)
 
 /**

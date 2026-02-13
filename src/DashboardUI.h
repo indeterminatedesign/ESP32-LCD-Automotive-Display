@@ -36,6 +36,7 @@ private:
     lv_obj_t *_mapValueLabel;
     lv_obj_t *barRPM;
     lv_obj_t *fuelBar;
+    lv_obj_t *tachometerImg;
     VehicleData *_currentSignals = nullptr;
     VehicleData previousVehicleData;
     static void scale_label_format_cb(lv_event_t *e);
