@@ -12,11 +12,13 @@ class DashboardUI
 {
 public:
     void begin(esp_panel::board::Board *board, VehicleData *vehicleSignals);
+    void LeftCells();
+    void RightCells();
     void render();
 
 private:
     esp_panel::board::Board *_board;
-    //Text labels
+    // Text labels
     lv_obj_t *_rpmLabel;
     lv_obj_t *_batteryLabel;
     lv_obj_t *_tpsLabel;
@@ -25,8 +27,9 @@ private:
     lv_obj_t *_afrLabel;
     lv_obj_t *_mapLabel;
     lv_obj_t *_fuelLabel;
+    lv_obj_t *_speedLabel;
 
-    //Value labels
+    // Value labels
     lv_obj_t *_batteryValueLabel;
     lv_obj_t *_tpsValueLabel;
     lv_obj_t *_coolantValueLabel;
@@ -34,9 +37,17 @@ private:
     lv_obj_t *_afrValueLabel;
     lv_obj_t *_rpmValueLabel;
     lv_obj_t *_mapValueLabel;
+    lv_obj_t *_matValueLabel;
     lv_obj_t *barRPM;
     lv_obj_t *fuelBar;
     lv_obj_t *tachometerImg;
+
+    // Styles
+    lv_style_t style_Speed;
+    lv_style_t style_ValueLabels;
+    lv_style_t style_Labels;
+
+    lv_obj_t *_speedValueLabel;
     VehicleData *_currentSignals = nullptr;
     VehicleData previousVehicleData;
     static void scale_label_format_cb(lv_event_t *e);

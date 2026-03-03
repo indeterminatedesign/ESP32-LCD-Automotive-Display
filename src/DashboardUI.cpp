@@ -24,7 +24,7 @@ void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleSign
     // RPM Image
     tachometerImg = lv_img_create(lv_scr_act());
     lv_img_set_src(tachometerImg, &Tachometer);
-    lv_obj_align(tachometerImg, LV_ALIGN_TOP_MID, 0, 58);
+    lv_obj_align(tachometerImg, LV_ALIGN_TOP_MID, 0, 60);
 
     // Create the RPM Bar
     barRPM = lv_bar_create(lv_scr_act());
@@ -42,94 +42,226 @@ void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleSign
     lv_style_set_pad_all(&style_bg_RPM, 4); // To make the indicator smaller
     lv_style_init(&style_indic_RPM);
     lv_style_set_bg_opa(&style_indic_RPM, LV_OPA_COVER);
-    lv_style_set_bg_color(&style_indic_RPM, lv_palette_main(LV_PALETTE_GREY));
+    lv_style_set_bg_color(&style_indic_RPM, lv_color_white());
     lv_obj_add_style(barRPM, &style_bg_RPM, LV_PART_MAIN);
     lv_obj_add_style(barRPM, &style_indic_RPM, LV_PART_INDICATOR);
 
     // ##############################################################
     //  Style used for all labels
-    static lv_style_t style_Labels;
+
     lv_style_init(&style_Labels);
-    lv_style_set_text_font(&style_Labels, &lv_font_montserrat_16);
-    lv_style_set_text_color(&style_Labels, lv_palette_main(LV_PALETTE_GREY));
+    lv_style_set_text_font(&style_Labels, &lv_font_montserrat_20);
+    lv_style_set_text_color(&style_Labels, lv_color_white());
+    lv_style_set_text_align(&style_Labels, LV_TEXT_ALIGN_CENTER);
 
     // Style used for all labels values
-    static lv_style_t style_ValueLabels;
+
     lv_style_init(&style_ValueLabels);
-    lv_style_set_text_font(&style_ValueLabels, &lv_font_montserrat_36);
-    lv_style_set_text_color(&style_ValueLabels, lv_palette_main(LV_PALETTE_GREY));
+    lv_style_set_text_font(&style_ValueLabels, &lv_font_montserrat_40);
+    lv_style_set_text_color(&style_ValueLabels, lv_color_white());
+    lv_style_set_text_align(&style_ValueLabels, LV_TEXT_ALIGN_CENTER);
+
+
+    lv_style_init(&style_Speed);
+    lv_style_set_text_font(&style_Speed, &lv_font_montserrat_48);
+    lv_style_set_text_color(&style_Speed, lv_color_white());
+    lv_style_set_text_align(&style_Speed, LV_TEXT_ALIGN_CENTER);
     // ##############################################################
 
-    //All the offsets so the labels are aligned
+    // All the offsets so the labels are aligned
     const int label_x_offset = 20;
     const int label_Y_offset = 140;
     const int value_x_offset = 20;
-    const int value_y_offset = label_Y_offset+25;
+    const int value_y_offset = label_Y_offset + 25;
     const int per_row_offset = 70;
 
-    // RPM
-    _rpmLabel = lv_label_create(lv_scr_act());
-    lv_obj_add_style(_rpmLabel, &style_Labels, 0);
-    lv_label_set_text(_rpmLabel, "RPM:");
-    lv_obj_align(_rpmLabel, LV_ALIGN_TOP_LEFT, label_x_offset, label_Y_offset);
-    _rpmValueLabel = lv_label_create(lv_scr_act());
-    lv_obj_add_style(_rpmValueLabel, &style_ValueLabels, 0);
-    lv_obj_align(_rpmValueLabel, LV_ALIGN_TOP_LEFT, value_x_offset, value_y_offset);
+    LeftCells();
+    RightCells();
 
-    // MAP
-    _mapLabel = lv_label_create(lv_scr_act());
-    lv_obj_add_style(_mapLabel, &style_Labels, 0);
-    lv_label_set_text(_mapLabel, "MAP (kPa):");
-    lv_obj_align(_mapLabel, LV_ALIGN_TOP_LEFT, label_x_offset, label_Y_offset + per_row_offset);
-    _mapValueLabel = lv_label_create(lv_scr_act());
-    lv_obj_add_style(_mapValueLabel, &style_ValueLabels, 0);
-    lv_obj_align(_mapValueLabel, LV_ALIGN_TOP_LEFT, value_x_offset, value_y_offset + per_row_offset);
+    // 1. The Parent Container (The "Layout Manager")
+    lv_obj_t *dataCont = lv_obj_create(lv_scr_act());
+    lv_obj_set_size(dataCont, 220, 280); // Fixed width, height grows with content
+    lv_obj_set_flex_flow(dataCont, LV_FLEX_FLOW_COLUMN);
+    lv_obj_align(dataCont, LV_ALIGN_TOP_MID, 0, 120);
+
+    // Style the parent to be invisible
+    lv_obj_set_style_bg_opa(dataCont, 0, 0);
+    lv_obj_set_style_border_width(dataCont, 0, 0);
+    lv_obj_set_style_pad_all(dataCont, 0, 0);
+
+    // THIS sets the vertical spacing between your rounded boxes
+    lv_obj_set_style_pad_row(dataCont, 15, 0);
+
+    lv_obj_t *box = lv_obj_create(dataCont);
+    lv_obj_set_size(box, lv_pct(100), 240); // 100% width of parent
+    lv_obj_set_flex_flow(box, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_style_bg_color(box, lv_palette_main(LV_PALETTE_INDIGO), 0);
+    lv_obj_set_style_pad_all(box, 10, 0); // Inner padding of the box
+    lv_obj_set_style_pad_row(box, 2, 0);  // Space between Title and Value
+    lv_obj_set_style_radius(box, 10, 0);   // Rounded corners
+
+    lv_obj_t *l = lv_label_create(box);
+    lv_obj_add_style(l, &style_Labels, 0);
+    lv_obj_set_width(l, lv_pct(100));
+    lv_label_set_text(l, "Speed (mph)");
+
+    _speedValueLabel = lv_label_create(box);
+    lv_obj_add_style(_speedValueLabel, &style_Speed, 0);
+    lv_obj_set_width(_speedValueLabel, lv_pct(100));
+    lv_label_set_text(_speedValueLabel, "60"); // Placeholder
+
+    /*    // RPM
+        _rpmLabel = lv_label_create(lv_scr_act());
+        lv_obj_add_style(_rpmLabel, &style_Labels, 0);
+        lv_label_set_text(_rpmLabel, "RPM:");
+        lv_obj_align(_rpmLabel, LV_ALIGN_TOP_LEFT, label_x_offset, label_Y_offset);
+        _rpmValueLabel = lv_label_create(lv_scr_act());
+        lv_obj_add_style(_rpmValueLabel, &style_ValueLabels, 0);
+        lv_obj_align(_rpmValueLabel, LV_ALIGN_TOP_LEFT, value_x_offset, value_y_offset);
+
+        // MAP
+        _mapLabel = lv_label_create(lv_scr_act());
+        lv_obj_add_style(_mapLabel, &style_Labels, 0);
+        lv_label_set_text(_mapLabel, "MAP (kPa):");
+        lv_obj_align(_mapLabel, LV_ALIGN_TOP_LEFT, label_x_offset, label_Y_offset + per_row_offset);
+        _mapValueLabel = lv_label_create(lv_scr_act());
+        lv_obj_add_style(_mapValueLabel, &style_ValueLabels, 0);
+        lv_obj_align(_mapValueLabel, LV_ALIGN_TOP_LEFT, value_x_offset, value_y_offset + per_row_offset);
+
+        // Coolant Temp
+        _coolantLabel = lv_label_create(lv_scr_act());
+        lv_obj_add_style(_coolantLabel, &style_Labels, 0);
+        lv_obj_align(_coolantLabel, LV_ALIGN_TOP_LEFT, label_x_offset, label_Y_offset + per_row_offset * 2);
+        lv_label_set_text(_coolantLabel, "Coolant(C):");
+        _coolantValueLabel = lv_label_create(lv_scr_act());
+        lv_obj_add_style(_coolantValueLabel, &style_ValueLabels, 0);
+        lv_obj_align(_coolantValueLabel, LV_ALIGN_TOP_LEFT, value_x_offset, value_y_offset + per_row_offset * 2);
+
+        // Battery Voltage
+        _batteryLabel = lv_label_create(lv_scr_act());
+        lv_obj_add_style(_batteryLabel, &style_Labels, 0);
+        lv_obj_align(_batteryLabel, LV_ALIGN_TOP_LEFT, label_x_offset, label_Y_offset + per_row_offset * 3);
+        lv_label_set_text(_batteryLabel, "Battery(V):");
+        _batteryValueLabel = lv_label_create(lv_scr_act());
+        lv_obj_add_style(_batteryValueLabel, &style_ValueLabels, 0);
+        lv_obj_align(_batteryValueLabel, LV_ALIGN_TOP_LEFT, value_x_offset, value_y_offset + per_row_offset * 3);
+    */
+    // Fuel Level Label
+    _fuelLabel = lv_label_create(lv_scr_act());
+    lv_obj_add_style(_fuelLabel, &style_Labels, 0);
+    lv_label_set_text(_fuelLabel, "Fuel Level:");
+    lv_obj_align(_fuelLabel, LV_ALIGN_BOTTOM_MID, 0, -90);
 
     // Fuel Bar
     static lv_style_t style_bg;
     static lv_style_t style_indic;
     fuelBar = lv_bar_create(lv_scr_act());
     lv_obj_set_size(fuelBar, 120, 20);
-    lv_obj_align(fuelBar, LV_ALIGN_BOTTOM_MID, 0, 0);
+    lv_obj_align(fuelBar, LV_ALIGN_BOTTOM_MID, 0, -50);
     lv_obj_set_style_radius(fuelBar, 0, LV_PART_MAIN);
     lv_obj_set_style_radius(fuelBar, 0, LV_PART_INDICATOR);
     lv_bar_set_range(fuelBar, 0, 8);
     lv_bar_set_value(fuelBar, 4, LV_ANIM_OFF); // HARDCODED FOR TESTING
     lv_style_init(&style_bg);
-    lv_style_set_border_color(&style_bg, lv_palette_main(LV_PALETTE_BLUE));
+    lv_style_set_border_color(&style_bg, lv_color_white());
     lv_style_set_border_width(&style_bg, 2);
-    lv_style_set_pad_all(&style_bg, 4);
+    lv_style_set_pad_all(&style_bg, 1);
     lv_style_init(&style_indic);
     lv_style_set_bg_opa(&style_indic, LV_OPA_COVER);
-    lv_style_set_bg_color(&style_indic, lv_palette_main(LV_PALETTE_BLUE));
+    lv_style_set_bg_color(&style_indic,lv_color_white());
     lv_obj_add_style(fuelBar, &style_bg, LV_PART_MAIN);
     lv_obj_add_style(fuelBar, &style_indic, LV_PART_INDICATOR);
-
-    // Fuel Level Label
-    _fuelLabel = lv_label_create(lv_scr_act());
-    lv_obj_add_style(_fuelLabel, &style_Labels, 0);
-    lv_label_set_text(_fuelLabel, "Fuel Level:");
-    lv_obj_align(_fuelLabel, LV_ALIGN_BOTTOM_MID, 0, -40);
-
-    // Coolant Temp
-    _coolantLabel = lv_label_create(lv_scr_act());
-    lv_obj_add_style(_coolantLabel, &style_Labels, 0);
-    lv_obj_align(_coolantLabel, LV_ALIGN_TOP_LEFT, label_x_offset, label_Y_offset + per_row_offset * 2);
-    lv_label_set_text(_coolantLabel, "Coolant(C):");
-    _coolantValueLabel = lv_label_create(lv_scr_act());
-    lv_obj_add_style(_coolantValueLabel, &style_ValueLabels, 0);
-    lv_obj_align(_coolantValueLabel, LV_ALIGN_TOP_LEFT, value_x_offset, value_y_offset + per_row_offset * 2);
-
-    // Battery Voltage
-    _batteryLabel = lv_label_create(lv_scr_act());
-    lv_obj_add_style(_batteryLabel, &style_Labels, 0);
-    lv_obj_align(_batteryLabel, LV_ALIGN_TOP_LEFT, label_x_offset, label_Y_offset + per_row_offset * 3);
-    lv_label_set_text(_batteryLabel, "Battery(V):");
-    _batteryValueLabel = lv_label_create(lv_scr_act());
-    lv_obj_add_style(_batteryValueLabel, &style_ValueLabels, 0);
-    lv_obj_align(_batteryValueLabel, LV_ALIGN_TOP_LEFT, value_x_offset, value_y_offset + per_row_offset * 3);
-
     lvgl_port_unlock();
+}
+
+void DashboardUI::LeftCells()
+{
+    // 1. The Parent Container (The "Layout Manager")
+    lv_obj_t *dataCont = lv_obj_create(lv_scr_act());
+    lv_obj_set_size(dataCont, 180, LV_SIZE_CONTENT); // Fixed width, height grows with content
+    lv_obj_set_flex_flow(dataCont, LV_FLEX_FLOW_COLUMN);
+    lv_obj_align(dataCont, LV_ALIGN_TOP_LEFT, 20, 120);
+
+    // Style the parent to be invisible
+    lv_obj_set_style_bg_opa(dataCont, 0, 0);
+    lv_obj_set_style_border_width(dataCont, 0, 0);
+    lv_obj_set_style_pad_all(dataCont, 0, 0);
+
+    // THIS sets the vertical spacing between your rounded boxes
+    lv_obj_set_style_pad_row(dataCont, 15, 0);
+
+    // --- Helper for creating the boxes ---
+    // To avoid repeating code 4 times, we'll use a local function style logic
+    auto create_cell = [&](const char *title, lv_obj_t **val_label)
+    {
+        lv_obj_t *box = lv_obj_create(dataCont);
+        lv_obj_set_size(box, lv_pct(100), LV_SIZE_CONTENT); // 100% width of parent
+        lv_obj_set_flex_flow(box, LV_FLEX_FLOW_COLUMN);
+        lv_obj_set_style_bg_opa(box, 0, 0);
+        lv_obj_set_style_pad_all(box, 10, 0); // Inner padding of the box
+        lv_obj_set_style_pad_row(box, 2, 0);  // Space between Title and Value
+        lv_obj_set_style_radius(box, 10, 0);   // Rounded corners
+
+        lv_obj_t *l = lv_label_create(box);
+        lv_obj_add_style(l, &style_Labels, 0);
+        lv_obj_set_width(l, lv_pct(100));
+        lv_label_set_text(l, title);
+
+        *val_label = lv_label_create(box);
+        lv_obj_add_style(*val_label, &style_ValueLabels, 0);
+        lv_obj_set_width(*val_label, lv_pct(100));
+        lv_label_set_text(*val_label, "--"); // Placeholder
+    };
+
+    // 2. Generate all the fields
+    create_cell("Coolant(C)", &_coolantValueLabel);
+    create_cell("IAT (C)", &_matValueLabel);
+    create_cell("Battery(V)", &_batteryValueLabel);
+}
+
+void DashboardUI::RightCells()
+{
+    // 1. The Parent Container (The "Layout Manager")
+    lv_obj_t *dataCont = lv_obj_create(lv_scr_act());
+    lv_obj_set_size(dataCont, 180, LV_SIZE_CONTENT); // Fixed width, height grows with content
+    lv_obj_set_flex_flow(dataCont, LV_FLEX_FLOW_COLUMN);
+    lv_obj_align(dataCont, LV_ALIGN_TOP_RIGHT, -20, 120);
+
+    // Style the parent to be invisible
+    lv_obj_set_style_bg_opa(dataCont, 0, 0);
+    lv_obj_set_style_border_width(dataCont, 0, 0);
+    lv_obj_set_style_pad_all(dataCont, 0, 0);
+
+    // THIS sets the vertical spacing between your rounded boxes
+    lv_obj_set_style_pad_row(dataCont, 15, 0);
+
+    // --- Helper for creating the boxes ---
+    // To avoid repeating code 4 times, we'll use a local function style logic
+    auto create_cell = [&](const char *title, lv_obj_t **val_label)
+    {
+        lv_obj_t *box = lv_obj_create(dataCont);
+        lv_obj_set_size(box, lv_pct(100), LV_SIZE_CONTENT); // 100% width of parent
+        lv_obj_set_flex_flow(box, LV_FLEX_FLOW_COLUMN);
+        lv_obj_set_style_bg_opa(box, 0, 0);
+        lv_obj_set_style_pad_all(box, 10, 0); // Inner padding of the box
+        lv_obj_set_style_pad_row(box, 2, 0);  // Space between Title and Value
+        lv_obj_set_style_radius(box, 10, 0);   // Rounded corners
+
+        lv_obj_t *l = lv_label_create(box);
+        lv_obj_add_style(l, &style_Labels, 0);
+        lv_obj_set_width(l, lv_pct(100));
+        lv_label_set_text(l, title);
+
+        *val_label = lv_label_create(box);
+        lv_obj_add_style(*val_label, &style_ValueLabels, 0);
+        lv_obj_set_width(*val_label, lv_pct(100));
+        lv_label_set_text(*val_label, "--"); // Placeholder
+    };
+
+    // 2. Generate all the fields
+    create_cell("RPM", &_rpmValueLabel);
+    create_cell("MAP (kPa)", &_mapValueLabel);
+    create_cell("AFR", &_afrValueLabel);
 }
 
 void DashboardUI::render()
@@ -168,6 +300,13 @@ void DashboardUI::render()
         dtostrf((int)current.coolant.value, 0, 1, buf);
         lv_label_set_text_fmt(_coolantValueLabel, "%s", buf);
         previousVehicleData.coolant.value = current.coolant.value;
+    }
+
+    if (abs(current.afr1.value - previousVehicleData.afr1.value) > current.afr1.uiUpdateTolerance)
+    {
+        dtostrf((int)current.afr1.value, 0, 1, buf);
+        lv_label_set_text_fmt(_afrValueLabel, "%s", buf);
+        previousVehicleData.afr1.value = current.afr1.value;
     }
 
     if (abs(current.battery.value - previousVehicleData.battery.value) > current.battery.uiUpdateTolerance)

@@ -103,5 +103,5 @@ void loop()
 {
   dashboardUI.render();
   // Empty loop, all work is done in the CAN task
-  vTaskDelay(pdMS_TO_TICKS(50));
+  vTaskDelay(pdMS_TO_TICKS(20));
 }
