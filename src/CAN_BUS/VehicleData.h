@@ -16,6 +16,7 @@ public:
     CANDataField fuelLevel;
     CANDataField leftTurn;
     CANDataField rightTurn;
+    CANDataField speed;
 
     VehicleData();
 

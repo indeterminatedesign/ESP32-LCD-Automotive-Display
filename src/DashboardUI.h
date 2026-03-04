@@ -40,7 +40,14 @@ private:
     lv_obj_t *_matValueLabel;
     lv_obj_t *barRPM;
     lv_obj_t *fuelBar;
+
+    //Images
     lv_obj_t *tachometerImg;
+    lv_obj_t *fuelImg;
+    lv_obj_t *highBeamImg;
+    lv_obj_t *turnSignalLeftImg;
+    lv_obj_t *turnSignalRightImg;
+    lv_obj_t *vwLogoImg;
 
     // Styles
     lv_style_t style_Speed;

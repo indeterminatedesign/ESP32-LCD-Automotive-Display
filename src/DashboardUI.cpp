@@ -2,7 +2,13 @@
 
 extern "C"
 {
-    LV_IMG_DECLARE(Tachometer); // Load an image with a chroma key of lime green.  Lower Memory usage than alpha.
+    LV_IMG_DECLARE(Tachometer);
+    LV_IMG_DECLARE(Fuel);
+    LV_IMG_DECLARE(HighBeam);
+    LV_IMG_DECLARE(TurnSignalRight);
+    LV_IMG_DECLARE(TurnSignalLeft);
+    LV_IMG_DECLARE(VWLogo);
+    LV_FONT_DECLARE(Montserrat_150);
 }
 
 void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleSignals)
@@ -21,21 +27,37 @@ void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleSign
 
     lv_obj_set_style_bg_color(lv_scr_act(), lv_color_make(0, 0, 0), 0);
 
-    // RPM Image
+    // Images
+    vwLogoImg = lv_img_create(lv_scr_act());
+    lv_img_set_src(vwLogoImg, &VWLogo); 
+    lv_obj_align(vwLogoImg, LV_ALIGN_TOP_LEFT, 7, 7);
+
     tachometerImg = lv_img_create(lv_scr_act());
     lv_img_set_src(tachometerImg, &Tachometer);
-    lv_obj_align(tachometerImg, LV_ALIGN_TOP_MID, 0, 60);
+    lv_obj_align(tachometerImg, LV_ALIGN_TOP_MID, 10, 60);
+
+    turnSignalLeftImg = lv_img_create(lv_scr_act());
+    lv_img_set_src(turnSignalLeftImg, &TurnSignalLeft);
+    lv_obj_align(turnSignalLeftImg, LV_ALIGN_TOP_MID, -100, 110);
+
+    turnSignalRightImg = lv_img_create(lv_scr_act());
+    lv_img_set_src(turnSignalRightImg, &TurnSignalRight);
+    lv_obj_align(turnSignalRightImg, LV_ALIGN_TOP_MID, 100, 110);
+
+    highBeamImg = lv_img_create(lv_scr_act());
+    lv_img_set_src(highBeamImg, &HighBeam);
+    lv_obj_align(highBeamImg, LV_ALIGN_TOP_MID, 0, 120);
 
     // Create the RPM Bar
     barRPM = lv_bar_create(lv_scr_act());
     static lv_style_t style_bg_RPM;
     static lv_style_t style_indic_RPM;
-    lv_obj_set_size(barRPM, 790, 50);
-    lv_obj_align(barRPM, LV_ALIGN_TOP_MID, 0, 5);
+    lv_obj_set_size(barRPM, 645, 40);
+    lv_obj_align(barRPM, LV_ALIGN_TOP_MID, 10, 15);
     lv_obj_set_style_radius(barRPM, 0, LV_PART_MAIN);
     lv_obj_set_style_radius(barRPM, 0, LV_PART_INDICATOR);
     lv_bar_set_range(barRPM, 0, 80);
-    lv_bar_set_value(barRPM, 0, LV_ANIM_OFF);
+    lv_bar_set_value(barRPM, 50, LV_ANIM_ON);
     lv_style_init(&style_bg_RPM);
     lv_style_set_border_color(&style_bg_RPM, lv_color_make(255, 255, 255));
     lv_style_set_border_width(&style_bg_RPM, 2);
@@ -61,9 +83,8 @@ void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleSign
     lv_style_set_text_color(&style_ValueLabels, lv_color_white());
     lv_style_set_text_align(&style_ValueLabels, LV_TEXT_ALIGN_CENTER);
 
-
     lv_style_init(&style_Speed);
-    lv_style_set_text_font(&style_Speed, &lv_font_montserrat_48);
+    lv_style_set_text_font(&style_Speed, &Montserrat_150);
     lv_style_set_text_color(&style_Speed, lv_color_white());
     lv_style_set_text_align(&style_Speed, LV_TEXT_ALIGN_CENTER);
     // ##############################################################
@@ -80,9 +101,9 @@ void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleSign
 
     // 1. The Parent Container (The "Layout Manager")
     lv_obj_t *dataCont = lv_obj_create(lv_scr_act());
-    lv_obj_set_size(dataCont, 220, 280); // Fixed width, height grows with content
+    lv_obj_set_size(dataCont, 260, 240); // Fixed width, height grows with content
     lv_obj_set_flex_flow(dataCont, LV_FLEX_FLOW_COLUMN);
-    lv_obj_align(dataCont, LV_ALIGN_TOP_MID, 0, 120);
+    lv_obj_align(dataCont, LV_ALIGN_TOP_MID, 0, 180);
 
     // Style the parent to be invisible
     lv_obj_set_style_bg_opa(dataCont, 0, 0);
@@ -93,12 +114,12 @@ void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleSign
     lv_obj_set_style_pad_row(dataCont, 15, 0);
 
     lv_obj_t *box = lv_obj_create(dataCont);
-    lv_obj_set_size(box, lv_pct(100), 240); // 100% width of parent
+    lv_obj_set_size(box, lv_pct(100), 200); // 100% width of parent
     lv_obj_set_flex_flow(box, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_style_bg_color(box, lv_palette_main(LV_PALETTE_INDIGO), 0);
+    lv_obj_set_style_bg_color(box, LV_COLOR_MAKE(0,3,91), 0);
     lv_obj_set_style_pad_all(box, 10, 0); // Inner padding of the box
-    lv_obj_set_style_pad_row(box, 2, 0);  // Space between Title and Value
-    lv_obj_set_style_radius(box, 10, 0);   // Rounded corners
+    lv_obj_set_style_pad_row(box, 25, 0); // Space between Title and Value
+    lv_obj_set_style_radius(box, 10, 0);  // Rounded corners
 
     lv_obj_t *l = lv_label_create(box);
     lv_obj_add_style(l, &style_Labels, 0);
@@ -147,17 +168,17 @@ void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleSign
         lv_obj_align(_batteryValueLabel, LV_ALIGN_TOP_LEFT, value_x_offset, value_y_offset + per_row_offset * 3);
     */
     // Fuel Level Label
-    _fuelLabel = lv_label_create(lv_scr_act());
-    lv_obj_add_style(_fuelLabel, &style_Labels, 0);
-    lv_label_set_text(_fuelLabel, "Fuel Level:");
-    lv_obj_align(_fuelLabel, LV_ALIGN_BOTTOM_MID, 0, -90);
+
+    fuelImg = lv_img_create(lv_scr_act());
+    lv_img_set_src(fuelImg, &Fuel);
+    lv_obj_align(fuelImg, LV_ALIGN_BOTTOM_MID, 120, -10);
 
     // Fuel Bar
     static lv_style_t style_bg;
     static lv_style_t style_indic;
     fuelBar = lv_bar_create(lv_scr_act());
-    lv_obj_set_size(fuelBar, 120, 20);
-    lv_obj_align(fuelBar, LV_ALIGN_BOTTOM_MID, 0, -50);
+    lv_obj_set_size(fuelBar, 180, 25);
+    lv_obj_align(fuelBar, LV_ALIGN_BOTTOM_MID, 0, -15);
     lv_obj_set_style_radius(fuelBar, 0, LV_PART_MAIN);
     lv_obj_set_style_radius(fuelBar, 0, LV_PART_INDICATOR);
     lv_bar_set_range(fuelBar, 0, 8);
@@ -165,10 +186,10 @@ void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleSign
     lv_style_init(&style_bg);
     lv_style_set_border_color(&style_bg, lv_color_white());
     lv_style_set_border_width(&style_bg, 2);
-    lv_style_set_pad_all(&style_bg, 1);
+    lv_style_set_pad_all(&style_bg, 5);
     lv_style_init(&style_indic);
     lv_style_set_bg_opa(&style_indic, LV_OPA_COVER);
-    lv_style_set_bg_color(&style_indic,lv_color_white());
+    lv_style_set_bg_color(&style_indic, lv_color_white());
     lv_obj_add_style(fuelBar, &style_bg, LV_PART_MAIN);
     lv_obj_add_style(fuelBar, &style_indic, LV_PART_INDICATOR);
     lvgl_port_unlock();
@@ -200,7 +221,7 @@ void DashboardUI::LeftCells()
         lv_obj_set_style_bg_opa(box, 0, 0);
         lv_obj_set_style_pad_all(box, 10, 0); // Inner padding of the box
         lv_obj_set_style_pad_row(box, 2, 0);  // Space between Title and Value
-        lv_obj_set_style_radius(box, 10, 0);   // Rounded corners
+        lv_obj_set_style_radius(box, 10, 0);  // Rounded corners
 
         lv_obj_t *l = lv_label_create(box);
         lv_obj_add_style(l, &style_Labels, 0);
@@ -245,7 +266,7 @@ void DashboardUI::RightCells()
         lv_obj_set_style_bg_opa(box, 0, 0);
         lv_obj_set_style_pad_all(box, 10, 0); // Inner padding of the box
         lv_obj_set_style_pad_row(box, 2, 0);  // Space between Title and Value
-        lv_obj_set_style_radius(box, 10, 0);   // Rounded corners
+        lv_obj_set_style_radius(box, 10, 0);  // Rounded corners
 
         lv_obj_t *l = lv_label_create(box);
         lv_obj_add_style(l, &style_Labels, 0);
@@ -283,7 +304,7 @@ void DashboardUI::render()
 
     if (abs(current.map.value - previousVehicleData.map.value) > current.map.uiUpdateTolerance)
     {
-        dtostrf(current.map.value, 0, 1, buf);
+        dtostrf(current.map.value, 0, 0, buf);
         lv_label_set_text_fmt(_mapValueLabel, "%s", buf);
         previousVehicleData.map.value = current.map.value;
         previousVehicleData.map.lastUpdate = current.map.lastUpdate;
@@ -314,6 +335,13 @@ void DashboardUI::render()
         dtostrf(current.battery.value, 0, 1, buf);
         lv_label_set_text_fmt(_batteryValueLabel, "%s", buf);
         previousVehicleData.battery.value = current.battery.value;
+    }
+
+    current.speed.value = current.rpm.value * 0.01f; // FAKE CALC FOR TESTING
+    if (abs(current.speed.value - previousVehicleData.speed.value) > current.speed.uiUpdateTolerance)
+    {
+        lv_label_set_text_fmt(_speedValueLabel, "%d", (int)current.speed.value);
+        previousVehicleData.speed.value = current.speed.value;
     }
 
     lvgl_port_unlock();
