@@ -5,7 +5,7 @@
 class VehicleData
 {
 public:
-    // Example _signals
+    // Megasquirt fields
     CANDataField rpm;
     CANDataField map;
     CANDataField tps;
@@ -13,6 +13,9 @@ public:
     CANDataField afr1;
     CANDataField pw1;
     CANDataField battery;
+
+    // CAN IO Module fields
+    CANDataField highBeam;
     CANDataField fuelLevel;
     CANDataField leftTurn;
     CANDataField rightTurn;

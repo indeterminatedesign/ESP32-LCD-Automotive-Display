@@ -3,13 +3,13 @@
 #include "VehicleData.h"
 #include "driver/twai.h"
 
-class GatewayDecoder
+class IOModuleDecoder
 {
 public:
-    GatewayDecoder(VehicleData& _signalsRef);
+    IOModuleDecoder(VehicleData& _signalsRef);
 
     void processFrame(const twai_message_t& msg);
 
 private:
-    VehicleData& _vehicleSignalData;
+    VehicleData& _vehicleData;
 };
