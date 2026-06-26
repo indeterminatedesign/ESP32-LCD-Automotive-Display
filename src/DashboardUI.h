@@ -12,6 +12,7 @@ class DashboardUI
 {
 public:
     void begin(esp_panel::board::Board *board, VehicleData *vehicleSignals);
+    void ProcessTurnSignals();
     void LeftCells();
     void RightCells();
     void render();

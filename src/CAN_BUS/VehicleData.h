@@ -16,10 +16,13 @@ public:
 
     // CAN IO Module fields
     CANDataField highBeam;
+    CANDataField headlights;
     CANDataField fuelLevel;
     CANDataField leftTurn;
     CANDataField rightTurn;
     CANDataField speed;
+    CANDataField button0;
+    CANDataField button1;
 
     VehicleData();
 

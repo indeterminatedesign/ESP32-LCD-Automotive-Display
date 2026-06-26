@@ -8,7 +8,9 @@ extern "C"
     LV_IMG_DECLARE(TurnSignalRight);
     LV_IMG_DECLARE(TurnSignalLeft);
     LV_IMG_DECLARE(VWLogo);
-    LV_FONT_DECLARE(Montserrat_150);
+    LV_FONT_DECLARE(B612_Mono_170);
+    LV_FONT_DECLARE(B612_Mono_15);
+    LV_FONT_DECLARE(B612_Mono_30);
 }
 
 void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleSignals)
@@ -29,7 +31,7 @@ void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleSign
 
     // Images
     vwLogoImg = lv_img_create(lv_scr_act());
-    lv_img_set_src(vwLogoImg, &VWLogo); 
+    lv_img_set_src(vwLogoImg, &VWLogo);
     lv_obj_align(vwLogoImg, LV_ALIGN_TOP_LEFT, 7, 7);
 
     tachometerImg = lv_img_create(lv_scr_act());
@@ -39,14 +41,17 @@ void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleSign
     turnSignalLeftImg = lv_img_create(lv_scr_act());
     lv_img_set_src(turnSignalLeftImg, &TurnSignalLeft);
     lv_obj_align(turnSignalLeftImg, LV_ALIGN_TOP_MID, -100, 110);
+    lv_obj_add_flag(turnSignalLeftImg, LV_OBJ_FLAG_HIDDEN);
 
     turnSignalRightImg = lv_img_create(lv_scr_act());
     lv_img_set_src(turnSignalRightImg, &TurnSignalRight);
     lv_obj_align(turnSignalRightImg, LV_ALIGN_TOP_MID, 100, 110);
+    lv_obj_add_flag(turnSignalRightImg, LV_OBJ_FLAG_HIDDEN);
 
     highBeamImg = lv_img_create(lv_scr_act());
     lv_img_set_src(highBeamImg, &HighBeam);
     lv_obj_align(highBeamImg, LV_ALIGN_TOP_MID, 0, 120);
+    lv_obj_add_flag(highBeamImg, LV_OBJ_FLAG_HIDDEN);
 
     // Create the RPM Bar
     barRPM = lv_bar_create(lv_scr_act());
@@ -72,19 +77,19 @@ void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleSign
     //  Style used for all labels
 
     lv_style_init(&style_Labels);
-    lv_style_set_text_font(&style_Labels, &lv_font_montserrat_20);
+    lv_style_set_text_font(&style_Labels, &B612_Mono_15);   
     lv_style_set_text_color(&style_Labels, lv_color_white());
     lv_style_set_text_align(&style_Labels, LV_TEXT_ALIGN_CENTER);
 
     // Style used for all labels values
 
     lv_style_init(&style_ValueLabels);
-    lv_style_set_text_font(&style_ValueLabels, &lv_font_montserrat_40);
+    lv_style_set_text_font(&style_ValueLabels, &B612_Mono_30);
     lv_style_set_text_color(&style_ValueLabels, lv_color_white());
     lv_style_set_text_align(&style_ValueLabels, LV_TEXT_ALIGN_CENTER);
 
     lv_style_init(&style_Speed);
-    lv_style_set_text_font(&style_Speed, &Montserrat_150);
+    lv_style_set_text_font(&style_Speed, &B612_Mono_170);
     lv_style_set_text_color(&style_Speed, lv_color_white());
     lv_style_set_text_align(&style_Speed, LV_TEXT_ALIGN_CENTER);
     // ##############################################################
@@ -103,7 +108,7 @@ void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleSign
     lv_obj_t *dataCont = lv_obj_create(lv_scr_act());
     lv_obj_set_size(dataCont, 260, 240); // Fixed width, height grows with content
     lv_obj_set_flex_flow(dataCont, LV_FLEX_FLOW_COLUMN);
-    lv_obj_align(dataCont, LV_ALIGN_TOP_MID, 0, 180);
+    lv_obj_align(dataCont, LV_ALIGN_TOP_MID, 0, 120);
 
     // Style the parent to be invisible
     lv_obj_set_style_bg_opa(dataCont, 0, 0);
@@ -113,10 +118,11 @@ void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleSign
     // THIS sets the vertical spacing between your rounded boxes
     lv_obj_set_style_pad_row(dataCont, 15, 0);
 
+    //Speed box
     lv_obj_t *box = lv_obj_create(dataCont);
-    lv_obj_set_size(box, lv_pct(100), 200); // 100% width of parent
+    lv_obj_set_size(box, lv_pct(100), 240); // 100% width of parent
     lv_obj_set_flex_flow(box, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_style_bg_color(box, LV_COLOR_MAKE(0,3,91), 0);
+    lv_obj_set_style_bg_color(box, LV_COLOR_MAKE(0, 3, 91), 0);
     lv_obj_set_style_pad_all(box, 10, 0); // Inner padding of the box
     lv_obj_set_style_pad_row(box, 25, 0); // Space between Title and Value
     lv_obj_set_style_radius(box, 10, 0);  // Rounded corners
@@ -130,44 +136,6 @@ void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleSign
     lv_obj_add_style(_speedValueLabel, &style_Speed, 0);
     lv_obj_set_width(_speedValueLabel, lv_pct(100));
     lv_label_set_text(_speedValueLabel, "60"); // Placeholder
-
-    /*    // RPM
-        _rpmLabel = lv_label_create(lv_scr_act());
-        lv_obj_add_style(_rpmLabel, &style_Labels, 0);
-        lv_label_set_text(_rpmLabel, "RPM:");
-        lv_obj_align(_rpmLabel, LV_ALIGN_TOP_LEFT, label_x_offset, label_Y_offset);
-        _rpmValueLabel = lv_label_create(lv_scr_act());
-        lv_obj_add_style(_rpmValueLabel, &style_ValueLabels, 0);
-        lv_obj_align(_rpmValueLabel, LV_ALIGN_TOP_LEFT, value_x_offset, value_y_offset);
-
-        // MAP
-        _mapLabel = lv_label_create(lv_scr_act());
-        lv_obj_add_style(_mapLabel, &style_Labels, 0);
-        lv_label_set_text(_mapLabel, "MAP (kPa):");
-        lv_obj_align(_mapLabel, LV_ALIGN_TOP_LEFT, label_x_offset, label_Y_offset + per_row_offset);
-        _mapValueLabel = lv_label_create(lv_scr_act());
-        lv_obj_add_style(_mapValueLabel, &style_ValueLabels, 0);
-        lv_obj_align(_mapValueLabel, LV_ALIGN_TOP_LEFT, value_x_offset, value_y_offset + per_row_offset);
-
-        // Coolant Temp
-        _coolantLabel = lv_label_create(lv_scr_act());
-        lv_obj_add_style(_coolantLabel, &style_Labels, 0);
-        lv_obj_align(_coolantLabel, LV_ALIGN_TOP_LEFT, label_x_offset, label_Y_offset + per_row_offset * 2);
-        lv_label_set_text(_coolantLabel, "Coolant(C):");
-        _coolantValueLabel = lv_label_create(lv_scr_act());
-        lv_obj_add_style(_coolantValueLabel, &style_ValueLabels, 0);
-        lv_obj_align(_coolantValueLabel, LV_ALIGN_TOP_LEFT, value_x_offset, value_y_offset + per_row_offset * 2);
-
-        // Battery Voltage
-        _batteryLabel = lv_label_create(lv_scr_act());
-        lv_obj_add_style(_batteryLabel, &style_Labels, 0);
-        lv_obj_align(_batteryLabel, LV_ALIGN_TOP_LEFT, label_x_offset, label_Y_offset + per_row_offset * 3);
-        lv_label_set_text(_batteryLabel, "Battery(V):");
-        _batteryValueLabel = lv_label_create(lv_scr_act());
-        lv_obj_add_style(_batteryValueLabel, &style_ValueLabels, 0);
-        lv_obj_align(_batteryValueLabel, LV_ALIGN_TOP_LEFT, value_x_offset, value_y_offset + per_row_offset * 3);
-    */
-    // Fuel Level Label
 
     fuelImg = lv_img_create(lv_scr_act());
     lv_img_set_src(fuelImg, &Fuel);
@@ -342,6 +310,47 @@ void DashboardUI::render()
     {
         lv_label_set_text_fmt(_speedValueLabel, "%d", (int)current.speed.value);
         previousVehicleData.speed.value = current.speed.value;
+    }
+
+    // Process the turn signal indicators
+    if (current.leftTurn.value != previousVehicleData.leftTurn.value)
+    {
+        if (current.leftTurn.value == true)
+        {
+            lv_obj_clear_flag(turnSignalLeftImg, LV_OBJ_FLAG_HIDDEN);
+        }
+        else
+        {
+            lv_obj_add_flag(turnSignalLeftImg, LV_OBJ_FLAG_HIDDEN);
+        }
+        previousVehicleData.leftTurn.value = current.leftTurn.value;
+    }
+
+    if (current.rightTurn.value != previousVehicleData.rightTurn.value)
+    {
+        if (current.rightTurn.value == true)
+        {
+            lv_obj_clear_flag(turnSignalRightImg, LV_OBJ_FLAG_HIDDEN);
+        }
+        else
+        {
+            lv_obj_add_flag(turnSignalRightImg, LV_OBJ_FLAG_HIDDEN);
+        }
+        previousVehicleData.rightTurn.value = current.rightTurn.value;
+    }
+
+    // Process the high beam indicator
+    if (current.highBeam.value != previousVehicleData.highBeam.value)
+    {
+        if (current.highBeam.value == true)
+        {
+            lv_obj_clear_flag(highBeamImg, LV_OBJ_FLAG_HIDDEN);
+        }
+        else
+        {
+            lv_obj_add_flag(highBeamImg, LV_OBJ_FLAG_HIDDEN);
+        }
+        previousVehicleData.highBeam.value = current.highBeam.value;
     }
 
     lvgl_port_unlock();

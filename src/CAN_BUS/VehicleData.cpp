@@ -12,7 +12,10 @@ VehicleData::VehicleData()
       leftTurn(0x601, 0, 0.0f, 0.0f, CANDataType::BOOL),  //Byte 0
       rightTurn(0x601, 1, 1.0f, 0.0f, CANDataType::BOOL), //Byte 1
       highBeam(0x601, 2, 2.0f, 0.0f, CANDataType::BOOL),  //Byte 2
-      speed(0x602, 0, 1.0f, 1.0f, CANDataType::U16) 
+      headlights(0x601, 3, 3.0f, 0.0f, CANDataType::BOOL), //Byte 3
+      speed(0x602, 0, 1.0f, 1.0f, CANDataType::U16), 
+      button0(0x603, 0, 0.0f, 0.0f, CANDataType::BOOL), //Byte 0
+      button1(0x603, 1, 1.0f, 0.0f, CANDataType::BOOL)  //Byte 1
 
 {
 }
