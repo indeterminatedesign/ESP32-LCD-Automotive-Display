@@ -40,7 +40,7 @@ void canRecieveTask(void *param)
       vehicleSignalsReadBuffer = vehicleSignals;
     }
 
-    vTaskDelay(pdMS_TO_TICKS(50)); // 50 ms delay
+    vTaskDelay(pdMS_TO_TICKS(RECEIVE_RATE_MS)); // ms delay
   }
 }
 

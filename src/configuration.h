@@ -2,6 +2,8 @@
 #define CAN_TX 20   // <-- adjust to your Waveshare board
 #define CAN_RX 19    // <-- adjust to your Waveshare board
 
+#define RECEIVE_RATE_MS 50 //How often to check for incoming CAN messages
+
 // ==================================
 #define EXAMPLE_I2C_ADDR    (ESP_IO_EXPANDER_I2C_CH422G_ADDRESS)
 #define EXAMPLE_I2C_SDA_PIN 8         // I2C data line pins
