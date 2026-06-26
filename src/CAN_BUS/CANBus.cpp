@@ -31,6 +31,7 @@ void CANBus::sendMessage(uint32_t id, uint8_t *data, uint8_t len)
     twai_message_t tx_msg = {};
     tx_msg.identifier = id;
     tx_msg.data_length_code = len;
+
     memcpy(tx_msg.data, data, len);
     if (twai_transmit(&tx_msg, pdMS_TO_TICKS(10)) == ESP_OK)
     {

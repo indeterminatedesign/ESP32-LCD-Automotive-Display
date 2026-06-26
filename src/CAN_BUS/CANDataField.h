@@ -22,7 +22,7 @@ class CANDataField
 public:
     CANDataType type;        ///< The underlying data format in the CAN frame
     float value = 0.0f;      ///< The processed physical value (scaled)
-    uint32_t lastUpdate = 0; ///< Timestamp (ms) of the last successful decode
+
 
     // CAN mapping
     uint32_t canId;          ///< The specific CAN Arbitration ID for this field
@@ -76,6 +76,5 @@ public:
             value = *((float *)&raw) * scale;
             break;
         }
-        lastUpdate = millis();
     }
 };

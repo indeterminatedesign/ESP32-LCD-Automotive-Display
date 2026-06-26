@@ -266,7 +266,6 @@ void DashboardUI::render()
 
         lv_label_set_text_fmt(_rpmValueLabel, "%d", (int)current.rpm.value);
         lv_bar_set_value(barRPM, current.rpm.value / 100, LV_ANIM_OFF);
-        previousVehicleData.rpm.lastUpdate = current.rpm.lastUpdate;
         previousVehicleData.rpm.value = current.rpm.value;
     }
 
@@ -275,7 +274,6 @@ void DashboardUI::render()
         dtostrf(current.map.value, 0, 0, buf);
         lv_label_set_text_fmt(_mapValueLabel, "%s", buf);
         previousVehicleData.map.value = current.map.value;
-        previousVehicleData.map.lastUpdate = current.map.lastUpdate;
     }
 
     if (abs(current.fuelLevel.value - previousVehicleData.fuelLevel.value) > current.fuelLevel.uiUpdateTolerance)
@@ -290,6 +288,7 @@ void DashboardUI::render()
         lv_label_set_text_fmt(_coolantValueLabel, "%s", buf);
         previousVehicleData.coolant.value = current.coolant.value;
     }
+    
 
     if (abs(current.afr1.value - previousVehicleData.afr1.value) > current.afr1.uiUpdateTolerance)
     {
