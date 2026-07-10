@@ -263,7 +263,6 @@ void DashboardUI::render()
 
     if (abs(current.rpm.value - previousVehicleData.rpm.value) > current.rpm.uiUpdateTolerance)
     {
-
         lv_label_set_text_fmt(_rpmValueLabel, "%d", (int)current.rpm.value);
         lv_bar_set_value(barRPM, current.rpm.value / 100, LV_ANIM_OFF);
         previousVehicleData.rpm.value = current.rpm.value;
@@ -276,11 +275,11 @@ void DashboardUI::render()
         previousVehicleData.map.value = current.map.value;
     }
 
-    Serial.printf("Current Fuel Level:");
-    Serial.println(current.fuelLevel.value);
-    if (abs(current.fuelLevel.value - previousVehicleData.fuelLevel.value) > current.fuelLevel.uiUpdateTolerance)
+    if (abs(current.fuelLevel.value - previousVehicleData.fuelLevel.value) >= current.fuelLevel.uiUpdateTolerance)
     {
         uint8_t fuelLevel = map(current.fuelLevel.value, 0, 100, 0, 8); // Map fuel level to bar range
+        Serial.printf("Mapped Fuel Level:");
+        Serial.println(fuelLevel);
         lv_bar_set_value(fuelBar, fuelLevel, LV_ANIM_OFF);
         previousVehicleData.fuelLevel.value = current.fuelLevel.value;
     }

@@ -23,7 +23,7 @@ void IOModuleDecoder::processFrame(const twai_message_t &msg)
     // Turn signals + lights
     case 0x601:
     {
-        Serial.printf("Left Turn Signal: %d, Right Turn Signal: %d, High Beam: %d\n", msg.data[0], msg.data[1], msg.data[2]);
+       // Serial.printf("Left Turn Signal: %d, Right Turn Signal: %d, High Beam: %d\n", msg.data[0], msg.data[1], msg.data[2]);
         _vehicleData.leftTurn.value = msg.data[0];
         _vehicleData.rightTurn.value = msg.data[1];
         _vehicleData.highBeam.value = msg.data[2];
