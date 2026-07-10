@@ -7,6 +7,7 @@
 #include <driver/twai.h>
 #include "CAN_Bus/VehicleData.h"
 #include "CAN_Bus/MegasquirtDecoder.h"
+#include "CAN_Bus/IOModuleDecoder.h"
 #include "CAN_Bus/CanDataField.h"
 #include "CAN_Bus/CANBus.h"
 #include "DashboardUI.h"
@@ -15,93 +16,114 @@ using namespace esp_panel::board;
 
 Board *board = nullptr;
 CANBus canBus;
-VehicleData vehicleSignals;
-VehicleData vehicleSignalsReadBuffer;
-MegasquirtDecoder msDecoder(vehicleSignals);
+
+// 1. Allocate three distinct buffers in memory
+VehicleData vehicleDataCANBuffer;   // Buffer A: Modified exclusively by Core 0 decoders
+VehicleData vehicleDataShadowBuffer;// Buffer B: The intermediate staging buffer
+VehicleData vehicleDataUIBuffer;    // Buffer C: Read exclusively by Core 1 Dashboard
+
+// Pointers to handle triple-buffering
+VehicleData* uiBufferPtr = &vehicleDataUIBuffer;
+
+// Decoders look directly at the dedicated CAN input buffer
+MegasquirtDecoder msDecoder(vehicleDataCANBuffer);
+IOModuleDecoder ioDecoder(vehicleDataCANBuffer);
 DashboardUI dashboardUI;
+
+// FreeRTOS Mutex is now ONLY used internally on Core 0 to protect the shadow copy
+SemaphoreHandle_t shadowBufferMutex = NULL;
 
 lv_obj_t *rpmLabel;
 lv_obj_t *mapLabel;
 lv_obj_t *fuelLabel;
 
-// ----------------- CAN Task -----------------
-void canRecieveTask(void *param)
-{
-  while (true)
-  {
-    twai_message_t msg;
-    if (canBus.receiveMessage(msg))
-    {
-      // Route to correct decoder
-      if (msg.identifier >= 0x5E8 && msg.identifier <= 0x5EA)
-        msDecoder.processFrame(msg);
+// ----------------- CAN Task (PINNED TO CORE 0) -----------------
+void canRecieveTask(void *param) {
+    while (true) {
+        twai_message_t msg;
+        bool hasNewData = false;
 
-      // Atomic update for UI
-      vehicleSignalsReadBuffer = vehicleSignals;
+        // Drain the hardware queue rapidly into vehicleDataCANBuffer (Buffer A)
+        while (canBus.receiveMessage(msg)) {
+            hasNewData = true;
+
+            if (msg.identifier >= 0x5E8 && msg.identifier <= 0x5EA) {
+                msDecoder.processFrame(msg);
+            } 
+            else if (msg.identifier >= 0x600 && msg.identifier <= 0x603) {
+                ioDecoder.processFrame(msg);
+            }
+        }
+
+        // Deep copy from CAN Buffer (A) into Shadow Buffer (B)
+        if (hasNewData && shadowBufferMutex != NULL) {
+            if (xSemaphoreTake(shadowBufferMutex, pdMS_TO_TICKS(1)) == pdTRUE) {
+                vehicleDataShadowBuffer = vehicleDataCANBuffer; 
+                xSemaphoreGive(shadowBufferMutex);
+            }
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(2)); 
     }
-
-    vTaskDelay(pdMS_TO_TICKS(RECEIVE_RATE_MS)); // ms delay
-  }
 }
 
-void setup()
-{
-  // Disable bluetooth and Wifi
-  esp_wifi_disconnect();
-  esp_wifi_stop();
-  esp_wifi_deinit();
-  btStop();
+void setup() {
+    // Disable bluetooth and Wifi
+    esp_wifi_disconnect();
+    esp_wifi_stop();
+    esp_wifi_deinit();
+    btStop();
 
-  Serial.begin(115200);
+    Serial.begin(115200);
 
-  // Initialize the Board (LCD + IO Expander)
-  board = new Board();
-  board->init();
+    shadowBufferMutex = xSemaphoreCreateMutex();
+    if (shadowBufferMutex == NULL) {
+        while(1);
+    }
 
-  // 2. CONFIGURE BEFORE INIT
-  auto lcd = board->getLCD();
-#if LVGL_PORT_AVOID_TEARING_MODE
-  lcd->configFrameBufferNumber(LVGL_PORT_DISP_BUFFER_NUM);
-#endif
+    board = new Board();
+    board->init();
 
-#if ESP_PANEL_DRIVERS_BUS_ENABLE_RGB && CONFIG_IDF_TARGET_ESP32S3
+    auto lcd = board->getLCD();
+    #if LVGL_PORT_AVOID_TEARING_MODE
+    lcd->configFrameBufferNumber(LVGL_PORT_DISP_BUFFER_NUM);
+    #endif
+
+    #if ESP_PANEL_DRIVERS_BUS_ENABLE_RGB && CONFIG_IDF_TARGET_ESP32S3
     auto lcd_bus = lcd->getBus();
-    /**
-     * As the anti-tearing feature typically consumes more PSRAM bandwidth, for the ESP32-S3, we need to utilize the
-     * "bounce buffer" functionality to enhance the RGB data bandwidth.
-     * This feature will consume `bounce_buffer_size * bytes_per_pixel * 2` of SRAM memory.
-     */
     if (lcd_bus->getBasicAttributes().type == ESP_PANEL_BUS_TYPE_RGB) {
-        static_cast<BusRGB *>(lcd_bus)->configRGB_BounceBufferSize(lcd->getFrameWidth() * 10);
+        static_cast<BusRGB *>(lcd_bus)->configRGB_BounceBufferSize(lcd->getFrameWidth() * 20);
     }
-#endif
+    #endif
 
-  // Start the hardware
-  assert(board->begin());
+    assert(board->begin());
 
-  // Render the UI
-  dashboardUI.begin(board, &vehicleSignalsReadBuffer);
+    // 2. Pass the UI Buffer pointer to your Dashboard
+    dashboardUI.begin(board, uiBufferPtr);
 
-  // Start CanBus
-  canBus.begin();
+    canBus.begin();
+    Serial.println("System Initialized");
 
-  Serial.println("UI Rendered Successfully");
-
-  // Create CAN task pinned to core 0
-  xTaskCreatePinnedToCore(
-      canRecieveTask, // Task function
-      "CAN Task",     // Name
-      4096,           // Stack size (bytes)
-      NULL,           // Parameter
-      1,              // Priority
-      NULL,           // Task handle
-      0               // Core ID
-  );
+    xTaskCreatePinnedToCore(
+        canRecieveTask, "CAN Task", 4096, NULL, 1, NULL, 0
+    );
 }
 
-void loop()
-{
-  dashboardUI.render();
-  // Empty loop, all work is done in the CAN task
-  vTaskDelay(pdMS_TO_TICKS(20));
+// ----------------- UI Task (RUNNING ON CORE 1) -----------------
+void loop() {
+    // 3. Atomically pull data out of the shadow buffer into the UI buffer.
+    // Because we only copy if the mutex is immediately free, this takes less than 1 microsecond.
+    if (shadowBufferMutex != NULL) {
+        if (xSemaphoreTake(shadowBufferMutex, pdMS_TO_TICKS(0)) == pdTRUE) {
+            // Memory block copy into the buffer your UI is holding a pointer to
+            vehicleDataUIBuffer = vehicleDataShadowBuffer; 
+            xSemaphoreGive(shadowBufferMutex);
+        }
+    }
+
+    // 4. Render completely lock-free. 
+    // Your UI looks at vehicleDataUIBuffer pointer safely, unhindered by CAN updates.
+    dashboardUI.render(); 
+
+    vTaskDelay(pdMS_TO_TICKS(10));
 }

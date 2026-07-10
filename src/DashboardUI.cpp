@@ -13,10 +13,10 @@ extern "C"
     LV_FONT_DECLARE(B612_Mono_30);
 }
 
-void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleSignals)
+void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleData)
 {
     // Store local reference to vehicle signals
-    _currentSignals = vehicleSignals;
+    _currentSignals = vehicleData;
 
     _board = board;
 
@@ -77,7 +77,7 @@ void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleSign
     //  Style used for all labels
 
     lv_style_init(&style_Labels);
-    lv_style_set_text_font(&style_Labels, &B612_Mono_15);   
+    lv_style_set_text_font(&style_Labels, &B612_Mono_15);
     lv_style_set_text_color(&style_Labels, lv_color_white());
     lv_style_set_text_align(&style_Labels, LV_TEXT_ALIGN_CENTER);
 
@@ -118,7 +118,7 @@ void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleSign
     // THIS sets the vertical spacing between your rounded boxes
     lv_obj_set_style_pad_row(dataCont, 15, 0);
 
-    //Speed box
+    // Speed box
     lv_obj_t *box = lv_obj_create(dataCont);
     lv_obj_set_size(box, lv_pct(100), 240); // 100% width of parent
     lv_obj_set_flex_flow(box, LV_FLEX_FLOW_COLUMN);
@@ -288,7 +288,6 @@ void DashboardUI::render()
         lv_label_set_text_fmt(_coolantValueLabel, "%s", buf);
         previousVehicleData.coolant.value = current.coolant.value;
     }
-    
 
     if (abs(current.afr1.value - previousVehicleData.afr1.value) > current.afr1.uiUpdateTolerance)
     {
@@ -324,7 +323,6 @@ void DashboardUI::render()
         }
         previousVehicleData.leftTurn.value = current.leftTurn.value;
     }
-
     if (current.rightTurn.value != previousVehicleData.rightTurn.value)
     {
         if (current.rightTurn.value == true)
