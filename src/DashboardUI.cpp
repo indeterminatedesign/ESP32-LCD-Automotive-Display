@@ -16,7 +16,7 @@ extern "C"
 void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleData)
 {
     // Store local reference to vehicle signals
-    _currentSignals = vehicleData;
+    _localVehicleData = vehicleData;
 
     _board = board;
 
@@ -40,17 +40,17 @@ void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleData
 
     turnSignalLeftImg = lv_img_create(lv_scr_act());
     lv_img_set_src(turnSignalLeftImg, &TurnSignalLeft);
-    lv_obj_align(turnSignalLeftImg, LV_ALIGN_TOP_MID, -100, 110);
+    lv_obj_align(turnSignalLeftImg, LV_ALIGN_BOTTOM_MID, -100, -50);
     lv_obj_add_flag(turnSignalLeftImg, LV_OBJ_FLAG_HIDDEN);
 
     turnSignalRightImg = lv_img_create(lv_scr_act());
     lv_img_set_src(turnSignalRightImg, &TurnSignalRight);
-    lv_obj_align(turnSignalRightImg, LV_ALIGN_TOP_MID, 100, 110);
+    lv_obj_align(turnSignalRightImg, LV_ALIGN_BOTTOM_MID, 100, -50);
     lv_obj_add_flag(turnSignalRightImg, LV_OBJ_FLAG_HIDDEN);
 
     highBeamImg = lv_img_create(lv_scr_act());
     lv_img_set_src(highBeamImg, &HighBeam);
-    lv_obj_align(highBeamImg, LV_ALIGN_TOP_MID, 0, 120);
+    lv_obj_align(highBeamImg, LV_ALIGN_BOTTOM_MID, 0, -50);
     lv_obj_add_flag(highBeamImg, LV_OBJ_FLAG_HIDDEN);
 
     // Create the RPM Bar
@@ -150,7 +150,7 @@ void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleData
     lv_obj_set_style_radius(fuelBar, 0, LV_PART_MAIN);
     lv_obj_set_style_radius(fuelBar, 0, LV_PART_INDICATOR);
     lv_bar_set_range(fuelBar, 0, 8);
-    lv_bar_set_value(fuelBar, 4, LV_ANIM_OFF); // HARDCODED FOR TESTING
+    lv_bar_set_value(fuelBar, 8, LV_ANIM_OFF);
     lv_style_init(&style_bg);
     lv_style_set_border_color(&style_bg, lv_color_white());
     lv_style_set_border_width(&style_bg, 2);
@@ -256,7 +256,7 @@ void DashboardUI::RightCells()
 void DashboardUI::render()
 {
 
-    VehicleData current = *_currentSignals;
+    VehicleData current = *_localVehicleData;
     char buf[32];
 
     lvgl_port_lock(-1);
@@ -276,9 +276,12 @@ void DashboardUI::render()
         previousVehicleData.map.value = current.map.value;
     }
 
+    Serial.printf("Current Fuel Level:");
+    Serial.println(current.fuelLevel.value);
     if (abs(current.fuelLevel.value - previousVehicleData.fuelLevel.value) > current.fuelLevel.uiUpdateTolerance)
     {
-        lv_bar_set_value(fuelBar, 4, LV_ANIM_OFF); // HARDCODED FOR TESTING
+        uint8_t fuelLevel = map(current.fuelLevel.value, 0, 100, 0, 8); // Map fuel level to bar range
+        lv_bar_set_value(fuelBar, fuelLevel, LV_ANIM_OFF);
         previousVehicleData.fuelLevel.value = current.fuelLevel.value;
     }
 
@@ -310,7 +313,6 @@ void DashboardUI::render()
         previousVehicleData.speed.value = current.speed.value;
     }
 
-    // Process the turn signal indicators
     if (current.leftTurn.value != previousVehicleData.leftTurn.value)
     {
         if (current.leftTurn.value == true)

@@ -56,7 +56,7 @@ private:
     lv_style_t style_Labels;
 
     lv_obj_t *_speedValueLabel;
-    VehicleData *_currentSignals = nullptr;
+    VehicleData *_localVehicleData = nullptr;
     VehicleData previousVehicleData;
     static void scale_label_format_cb(lv_event_t *e);
     static void ui_timer_cb(lv_timer_t *timer);

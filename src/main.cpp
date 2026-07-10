@@ -74,7 +74,7 @@ void setup() {
     esp_wifi_deinit();
     btStop();
 
-    Serial.begin(115200);
+    Serial.begin(512000);
 
     shadowBufferMutex = xSemaphoreCreateMutex();
     if (shadowBufferMutex == NULL) {
