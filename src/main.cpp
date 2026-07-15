@@ -128,5 +128,5 @@ void loop() {
     // Your UI looks at vehicleDataUIBuffer pointer safely, unhindered by CAN updates.
     dashboardUI.render(); 
 
-    vTaskDelay(pdMS_TO_TICKS(10));
+    vTaskDelay(pdMS_TO_TICKS(5));
 }

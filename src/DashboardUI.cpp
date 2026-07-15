@@ -135,7 +135,7 @@ void DashboardUI::begin(esp_panel::board::Board *board, VehicleData *vehicleData
     _speedValueLabel = lv_label_create(box);
     lv_obj_add_style(_speedValueLabel, &style_Speed, 0);
     lv_obj_set_width(_speedValueLabel, lv_pct(100));
-    lv_label_set_text(_speedValueLabel, "60"); // Placeholder
+    lv_label_set_text(_speedValueLabel,""); // Placeholder
 
     fuelImg = lv_img_create(lv_scr_act());
     lv_img_set_src(fuelImg, &Fuel);
@@ -175,7 +175,6 @@ void DashboardUI::LeftCells()
     lv_obj_set_style_bg_opa(dataCont, 0, 0);
     lv_obj_set_style_border_width(dataCont, 0, 0);
     lv_obj_set_style_pad_all(dataCont, 0, 0);
-
     // THIS sets the vertical spacing between your rounded boxes
     lv_obj_set_style_pad_row(dataCont, 15, 0);
 
@@ -310,7 +309,6 @@ void DashboardUI::render()
         previousVehicleData.battery.value = current.battery.value;
     }
 
-    current.speed.value = current.rpm.value * 0.01f; // FAKE CALC FOR TESTING
     if (abs(current.speed.value - previousVehicleData.speed.value) > current.speed.uiUpdateTolerance)
     {
         lv_label_set_text_fmt(_speedValueLabel, "%d", (int)current.speed.value);

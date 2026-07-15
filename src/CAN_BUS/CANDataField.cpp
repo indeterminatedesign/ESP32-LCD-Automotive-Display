@@ -13,11 +13,11 @@
         switch (canDatatype)
         {
         case CANDataType::BOOL:
-            value = (data[offset] != 0) ? 1 : 0;
+                         value = (data[offset] != 0) ? 1 : 0;
             break;
         case CANDataType::S16:
         {
-            uint16_t raw = (data[offset] << 8) | data[offset + 1];
+            uint16_t raw = (int16_t)((data [offset] << 8) | data[offset + 1]);
             value = ((int16_t)raw) * scale;
             break;
         }
