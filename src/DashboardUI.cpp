@@ -278,17 +278,22 @@ void DashboardUI::render()
     if (abs(current.fuelLevel.value - previousVehicleData.fuelLevel.value) >= current.fuelLevel.uiUpdateTolerance)
     {
         uint8_t fuelLevel = map(current.fuelLevel.value, 0, 100, 0, 8); // Map fuel level to bar range
-        Serial.printf("Mapped Fuel Level:");
-        Serial.println(fuelLevel);
         lv_bar_set_value(fuelBar, fuelLevel, LV_ANIM_OFF);
         previousVehicleData.fuelLevel.value = current.fuelLevel.value;
     }
 
     if (abs(current.coolant.value - previousVehicleData.coolant.value) > current.coolant.uiUpdateTolerance)
     {
-        dtostrf((int)current.coolant.value, 0, 1, buf);
+        dtostrf((int)current.coolant.value, 0, 0, buf);
         lv_label_set_text_fmt(_coolantValueLabel, "%s", buf);
         previousVehicleData.coolant.value = current.coolant.value;
+    }
+
+    if (abs(current.iat.value - previousVehicleData.iat.value) > current.iat.uiUpdateTolerance)
+    {
+        dtostrf((int)current.iat.value, 0, 0, buf);
+        lv_label_set_text_fmt(_matValueLabel, "%s", buf);
+        previousVehicleData.iat.value = current.iat.value;
     }
 
     if (abs(current.afr1.value - previousVehicleData.afr1.value) > current.afr1.uiUpdateTolerance)

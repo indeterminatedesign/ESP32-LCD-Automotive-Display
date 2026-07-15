@@ -47,7 +47,8 @@ void canRecieveTask(void *param) {
         while (canBus.receiveMessage(msg)) {
             hasNewData = true;
 
-            if (msg.identifier >= 0x5E8 && msg.identifier <= 0x5EA) {
+            // Extended range to 0x5EE to include MAT, BAT V, and AFR frames (0x5E9, 0x5EA, 0x5EB, etc.)
+            if (msg.identifier >= 0x5E8 && msg.identifier <= 0x5EE) {
                 msDecoder.processFrame(msg);
             } 
             else if (msg.identifier >= 0x600 && msg.identifier <= 0x603) {
@@ -57,7 +58,9 @@ void canRecieveTask(void *param) {
 
         // Deep copy from CAN Buffer (A) into Shadow Buffer (B)
         if (hasNewData && shadowBufferMutex != NULL) {
-            if (xSemaphoreTake(shadowBufferMutex, pdMS_TO_TICKS(1)) == pdTRUE) {
+            // Using a 0-tick timeout ensures Core 0 NEVER blocks waiting on Core 1's UI.
+            // If the lock is held, we just skip this loop's copy and catch it 2ms later.
+            if (xSemaphoreTake(shadowBufferMutex, 0) == pdTRUE) {
                 vehicleDataShadowBuffer = vehicleDataCANBuffer; 
                 xSemaphoreGive(shadowBufferMutex);
             }

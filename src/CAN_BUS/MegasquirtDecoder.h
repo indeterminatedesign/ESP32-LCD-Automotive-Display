@@ -1,6 +1,7 @@
 #pragma once
 #include "VehicleData.h"
 #include "driver/twai.h"
+#include "CANDataField.h"
 
 class MegasquirtDecoder
 {
@@ -19,4 +20,5 @@ private:
 
     uint16_t readU16(const uint8_t *d, uint8_t offset);
     int16_t readS16(const uint8_t *d, uint8_t offset);
+    uint8_t readU8(const uint8_t *d, uint8_t offset);
 };
