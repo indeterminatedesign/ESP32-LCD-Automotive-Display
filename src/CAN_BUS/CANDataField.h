@@ -29,6 +29,7 @@ public:
     uint8_t offset;          ///< Byte index in the 8-byte CAN payload where data starts
     float scale;             ///< Multiplier to convert raw bits to physical units (e.g., 0.1 for 100mV -> 10V)
     float uiUpdateTolerance; ///< Minimum change required in 'value' to trigger a UI refresh
+    float sensorBias;
 
     /**
      * @brief Construct a new CANDataField object.
@@ -38,14 +39,15 @@ public:
      * @param tolerance The delta threshold for UI updates.
      * @param t The data type (U16, S16, or Float).
      */
-    CANDataField(uint32_t id = 0, uint8_t off = 0, float scl = 1.0f, float tolerance = 1.0f, CANDataType t = CANDataType::U16)
+    CANDataField(uint32_t id = 0, uint8_t off = 0, float scl = 1.0f, float tolerance = 1.0f,float bias = 0.0f, CANDataType t = CANDataType::U16)
         : canId(id),
           offset(off),
           scale(scl),
           uiUpdateTolerance(tolerance),
+          sensorBias(bias),
           canDatatype(t)
     {
-    }
+    };
     void decode(const uint8_t *data);
     void encode(uint8_t *data);
 };

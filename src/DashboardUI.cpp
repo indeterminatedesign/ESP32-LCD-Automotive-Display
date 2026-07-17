@@ -202,8 +202,8 @@ void DashboardUI::LeftCells()
     };
 
     // 2. Generate all the fields
-    create_cell("Coolant(C)", &_coolantValueLabel);
-    create_cell("IAT (C)", &_matValueLabel);
+    create_cell("Coolant(F)", &_coolantValueLabel);
+    create_cell("IAT (F)", &_matValueLabel);
     create_cell("Battery(V)", &_batteryValueLabel);
 }
 

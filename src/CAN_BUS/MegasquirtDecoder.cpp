@@ -11,6 +11,7 @@ void MegasquirtDecoder::processFrame(const twai_message_t &msg)
     if (msg.data_length_code != 8)
         return;
 
+    // Based on the CAN ID decode the message
     switch (msg.identifier)
     {
     case 0x5E8:

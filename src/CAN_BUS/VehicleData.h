@@ -26,6 +26,4 @@ public:
     CANDataField button1;
 
     VehicleData();
-
-    void swapBuffers(); // optional if you implement double-buffering
 };
